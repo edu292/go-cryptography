@@ -61,7 +61,7 @@ They are in almost every language and can range from very important to the singl
 
 Under the hood, they work by taking a key (like a string), running it through a hash function, and mathematically compacting that output to fit within the index bounds of an underlying array. This relies entirely on the strict determinism of hash functions, the same input key always yields the exact same hash, combined with the lightning-fast access speeds of array indices.
 
-This is how languages instantly find variables in the global scope, how dynamic features like monkey patching and duck typing work, and it tends to be the go to optimization for a massive variety of algorithm problems. It is worth noting that while cryptographic hashes (like the ones used for MACs or Passwords) prioritize security and collision resistance, the internal hash functions used for hashmaps are explicitly designed to prioritize pure, unadulterated speed.
+This is how languages instantly find variables in the global scope, how dynamic features like monkey patching and duck typing work, and it tends to be the goto optimization for a massive variety of algorithm problems. It is worth noting that while cryptographic hashes (like the ones used for MACs or Passwords) prioritize security and collision resistance, the internal hash functions used for hashmaps are explicitly designed to prioritize pure, unadulterated speed.
 
 ### Password Storage
 Common-sense among web developers, and baked into most frameworks, is the concept of hashing passwords before storage. But, how does that work? if hashes are irreversible, how can you be sure that the passwords match when the user tries to log into their account? Wouldn't encryption be better for this? These are the questions to be solved in this section, and through them you will come to know a very important distiction between hash algorithms: Genereal Hashes and KDFs. 
@@ -107,3 +107,30 @@ When you are the one issuing these signatures and they are used only on your ser
 
 But what if you are implementing a feature like "Sign in with Google"? Your server doesn't share a secret key with Google, and you certainly don't have access to the user's Google password. When a user logs in via Google, Google authenticates them, generates a JWT, and signs it using their *Private Key*. Your server receives this token, fetches Google's widely available *Public Key*, and verifies the signature. If the math checks out, your server can securely log the user in. You are relying entirely on cryptographic proof of Google's identity, establishing secure authentication without ever touching the user's actual credentials.
 
+## Case Study: How RSA Works
+While symmetric encryption and hash functions are complicated enough, I can assure you, what I find most fascinating about cryptography is asymmetric encryption. How can you expose your key to the entire internet and have the cipher still be secure? What kind of mathematical operations happen during encryption and decryption that only work if you have the exact paired key? 
+
+To answer these questions, we will take a look at how the most famous asymmetric algorithm, RSA, actually works. Thanks to foundational math that has already been laid out for us, the core engine of RSA is surprisingly accessible to implement in code.
+
+> **Note:** Do not roll your own crypto! This is strictly an educational attempt. While it does work for testing and understanding the math, it lacks proper hardening and side-channel protections and should never get near a production setting.
+
+### The Trapdoor Function
+To understand asymmetric encryption, we first need to understand a **trapdoor function**. This is a mathematical operation that is fast and easy to execute in one direction, but given only the result, it is practically impossible to reverse-engineer the original parameters. 
+
+In the case of RSA, this function is based on the multiplication of two prime numbers (`p` and `q`), resulting in another number `n`. Since there is no known formula to calculate which two prime numbers resulted in `n` if that is all you've got, the only way to get them back would be brute force. And if `n` is big enough—RSA keys tend to be at least 2048 bits (over 600 digits)—brute-forcing would take more than a million years on the most powerful modern hardware. 
+
+### The Anatomy of the Keys (`n`, `e`, and `d`)
+In RSA, a "key" isn't a string of text. It is actually just a pair of numbers generated through the following steps and secondary trapdoors. And at its absolute core, the actual act of encrypting and decrypting a message is just multiplication. 
+
+1. **The Starting Point (Random Primes):** Everything begins by picking two massive prime numbers at *random* (`p` and `q`). Randomness is the foundation of this security: if an attacker can predict your random number generator, they can guess your primes and the entire encryption falls apart.
+2. **The Shared Modulo (`n`):** We multiply our random `p` and `q` together to get `n`. This massive number becomes the modulo of the encryption and decryption operations. A modulo is mathematical concept that acts like a maximun boundary: any number larger than `n` simply wraps back around to 0 and continues counting from there, much like a clock.
+3. **The Public Exponent (`e`):** We need a public number used to lock the data. To encrypt a message, we convert it into a number and simply multiply it by itself `e` times. While many production systems hardcode `e` to a standard, fast value (like 65537) for performance reasons, true RSA allows you to calculate `e` dynamically based on the properties of `p` and `q`. My implementation generates `e` dynamically to demonstrate the complete mathematical chain.
+4. **The Private Exponent (`d`):** We now need a way to unlock the data. Using our secret primes, we calculate a highly specific inverse number, `d`. To decrypt a scrambled message, you take the ciphertext and multiply it by itself `d` times.
+
+This relationship between `e` and `d` is the **second trapdoor**. Because of the modular arithmetic linking them, `d` acts as the exact mathematical inverse of `e`. Applying `d` perfectly cancels out the multiplication done by `e`, unwinding the scrambled number and landing you exactly back on the original message. 
+
+If you know the original primes (`p` and `q`), calculating a valid `e` and its exact mathematical mirror `d` is simple arithmetic. However, if an attacker only has the public canvas `n` and the public exponent `e`, calculating `d` to cancel the multiplication is mathematically impossible. 
+
+Your **Public Key** is the combination of `(n, e)`. You can hand this to anyone so they can multiply and lock their messages.
+
+Your **Private Key** is the combination of `(n, d)`. Because you destroyed or securely hid the original primes (`p` and `q`) after generating your keys, no one else can ever calculate that unlocking lever. Any message scrambled by `e` can *only* be unscrambled by your secret `d`.
