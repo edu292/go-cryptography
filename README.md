@@ -1,5 +1,26 @@
 # Cryptography
 
+## Table of Contents
+- [What is Cryptography?](#what-is-cryptography)
+  - [Encryption vs. Encoding](#encryption-vs-encoding)
+- [Types of Cryptography](#types-of-cryptography)
+- [History of Cryptography](#history-of-cryptography)
+  - [The Caesar Cipher and Brute Force](#the-caesar-cipher-and-brute-force)
+  - [The Enigma and Alan Turing](#the-enigma-and-alan-turing)
+  - [The Impact on Modern Computing and Security](#the-impact-on-modern-computing-and-security)
+- [Applications of Cryptography](#applications-of-cryptography)
+  - [Hashmaps](#hashmaps)
+  - [Password Storage](#password-storage)
+  - [Integrity and Authentication](#integrity-and-authentication)
+    - [Checksum](#checksum)
+    - [MACs and HMACs](#macs-and-hmacs)
+    - [Digital Signatures](#digital-signatures)
+    - [CA Certificates](#ca-certificates)
+    - [JSON Web Tokens (JWTs) and Third-Party Auth](#json-web-tokens-jwts-and-third-party-auth)
+- [Case Study: How RSA Works](#case-study-how-rsa-works)
+  - [The Trapdoor Function](#the-trapdoor-function)
+  - [The Anatomy of the Keys (n, e, and d)](#the-anatomy-of-the-keys-n-e-and-d)
+
 ## What is Cryptography?
 
 To start off being a little pedantic, the meaning we normally attribute to cryptography is not entirely correct. In the dictionary sense, cryptography is the practice and study of creating secure communication techniques, but it doesn't refer to simply using or interacting with them. 
