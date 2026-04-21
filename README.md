@@ -9,7 +9,7 @@ The term that encompasses the whole field is **cryptology**, the science of secr
 ### Encryption vs. Encoding
 There are other misconceptions around cryptography: just because you can't make sense of something doesn't mean it is encrypted. Often, people see encoded text and assume it is secure. But for a system to actually be considered cryptography, it must not be easily reversible and must reveal as little as possible about the original information. Attributes that mere encoding does not have.
 
-To be clear, everything other than straight binary relies on some type of **encoding**. Since computers only natively deal with 1s and 0s, representing anything else requires establishing a shared convention, pattern, or protocol. This is what an encoding is: a padronized way to attribute meaning to a specific value or a group of values in a specific pattern or position. In the human sense, we would be working with letters and attributing meaning to words and sentences to form a language. Because we are dealing with computers, that same concept is applied to ones and zeros, bits, and bytes.
+To be clear, everything other than straight binary relies on some type of **encoding**. Since computers only natively deal with 1s and 0s, representing anything else requires establishing a shared convention, pattern, or protocol. This is what an encoding is: a standardized way to attribute meaning to a specific value or a group of values in a specific pattern or position. In the human sense, we would be working with letters and attributing meaning to words and sentences to form a language. Because we are dealing with computers, that same concept is applied to ones and zeros, bits, and bytes.
 
 We often stack multiple encodings on top of each other to represent complex data. If you look at that data without the proper program to translate it back to its human representation, it might look completely random and cryptic. However, once you know which "language" or format you are looking at and find the right program, any information there is as easy to read as anything out on the public internet.
 
@@ -53,7 +53,7 @@ This taught modern cryptographers a vital lesson: an attacker should never be ab
 Both techniques ensure that predictability is stripped from the equation, rendering pattern recognition and known-plaintext attacks useless.
 
 
-## Aplications of Cryptography
+## Applications of Cryptography
 As we transition from theory to practice, you will notice a heavy bias toward hashing in the following applications. To be clear, it's impossible to quantify whether encryption or hashing is more "useful", they are simply two distinct tools required to build a secure system. But the reality is that applying standard encryption to a problem is usually straightforward: you lock the data and hide the key. Hashing is where the interesting engineering happens. Because we are intentionally destroying data to create a mathematical fingerprint, we have to rely on clever techniques, like stacking, salting, and stretching, to make that fingerprint useful.
 
 ### Hashmaps
@@ -75,21 +75,21 @@ To solve these issues, we use salts and KDF algorithms. A salt is a random input
 ### Integrity and Authentication
 
 #### Checksum
-If a hash is a fingerprint of a file them it can be compared to the original file (by re-hashing it) to confirm whether there might've been an issue on the transport of the file, on a large download, for example. This technique is known as a **checksum**, and is very useful if the download and the hash come from different sources, or when you are absolutely sure you got the hash from a secure chanel. 
+If a hash is a fingerprint of a file them it can be compared to the original file (by re-hashing it) to confirm whether there might've been an issue on the transport of the file, on a large download, for example. This technique is known as a **checksum**, and is very useful if the download and the hash come from different sources, or when you are absolutely sure you got the hash from a secure channel. 
 
-However, as stated, it only works for accidental transport issues, not malicius manipulation. if an attacker is able to manipulate the file, they could simply generate a new hash for their corrupted file and swap that out, too.
+However, as stated, it only works for accidental transport issues, not malicious manipulation. if an attacker is able to manipulate the file, they could simply generate a new hash for their corrupted file and swap that out, too.
 
 #### MACs and HMACs
 This is exactly the problem that MACs are designed to solve. They work by combining the checksum method with a secret key, appending it to the file before hashing it (`MAC = Hash(file + secret key)`). Because only you and the trusted source have this secret, we can rule out an attacker being able to manipulating the hash. Any attempt at doing so would be fail your hash comparison. 
 
-This is still a specific use case, but there wouldn't be any issues if it weren't for **Length Extension Attacks**. This exploit targets a specific characteristic of popula hash functionsy like SHA-256. Because these functions process data sequentially in fixed-length blocks and rely on padding to make smaller blocks meet the size criteria, an attacker who knows original message's length can essentially "un-pad" it and make the function continue hashing any extra malicius payload they append. They can generate a valid hash and fool a standard MAC without even knowing the secret key. 
+This is still a specific use case, but there wouldn't be any issues if it weren't for **Length Extension Attacks**. This exploit targets a specific characteristic of popula hash functionsy like SHA-256. Because these functions process data sequentially in fixed-length blocks and rely on padding to make smaller blocks meet the size criteria, an attacker who knows original message's length can essentially "un-pad" it and make the function continue hashing any extra malicious payload they append. They can generate a valid hash and fool a standard MAC without even knowing the secret key. 
 
 To solve this **HMAC** was created. It is basically a two step MAC (`HMAC = Hash(Hash(file + secret) + secret`), which mathematically seals the state and make length extension attacks impossible.
 
 #### Digital Signatures
 MACs and HMACs are highly effective, but they require both parties to securely share the exact same secret key. What if you want to prove a file is authentic to the entire public internet without giving everyone your secret? This is where **Digital Signatures** come in. 
 
-Instead of a shared secret, it uses asymetric encryption on top of the file hash, with a *Private Key* signign it(which is the same as encrypting). You then publish the file alongside this encrypted hash. Anyone can then use your widely known *Public Key* to decrypt and verify the hash. If the hashes match, it proves the file wasn't tampered with and that it absolutely had to come from you. 
+Instead of a shared secret, it uses asymmetric encryption on top of the file hash, with a *Private Key* signing it(which is the same as encrypting). You then publish the file alongside this encrypted hash. Anyone can then use your widely known *Public Key* to decrypt and verify the hash. If the hashes match, it proves the file wasn't tampered with and that it absolutely had to come from you. 
 
 #### CA Certificates
 Digital Signatures solve the problem of public authenticity, but they introduce a critical "chicken and egg" problem: how do you know the Public Key you downloaded actually belongs to the person you think it does? If an attacker intercepts your connection, they could still hand you *their* public key while claiming it is Google's, allowing them to fake signatures. 
